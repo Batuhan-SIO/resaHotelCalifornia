@@ -1,112 +1,68 @@
 <?php
-// Inclusion du fichier de connexion à la base de données
 require_once '../config/db_connect.php';
+$conn = openDatabaseConnection();
 
-// Récupération de l'ID du client
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = $_GET['id'];
+$stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
+$stmt->execute([$id]);
+$client = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Vérifier si l'ID est valide
-if ($id <= 0) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nom = $_POST['nom'];
+    $email = $_POST['email'];
+    $tel = $_POST['telephone'];
+    $nb = $_POST['nombre_personnes'];
+
+    $stmt = $conn->prepare("UPDATE clients SET nom = ?, email = ?, telephone = ?, nombre_personnes = ? WHERE id = ?");
+    $stmt->execute([$nom, $email, $tel, $nb, $id]);
+    closeDatabaseConnection($conn);
     header("Location: listClients.php");
     exit;
 }
-
-$conn = openDatabaseConnection();
-
-// Méthode POST : Traitement du formulaire si soumis
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = trim($_POST['nom']);
-    $prenom = trim($_POST['prenom']);
-    $email = trim($_POST['email']);
-
-    // Validation des données
-    $errors = [];
-
-    if (empty($nom)) {
-        $errors[] = "Le nom est obligatoire.";
-    }
-
-    if (empty($prenom)) {
-        $errors[] = "Le prénom est obligatoire.";
-    }
-
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "L'email n'est pas valide.";
-    }
-
-    // Si pas d'erreurs, mettre à jour les données
-    if (empty($errors)) {
-        $stmt = $conn->prepare("UPDATE clients SET nom = ?, prenom = ?, email = ? WHERE id = ?");
-        $stmt->execute([$nom, $prenom, $email, $id]);
-
-        // Rediriger vers la liste des clients
-        header("Location: listClients.php?success=1");
-        exit;
-    }
-} else {
-    // Méthode GET : Récupérer les données du client
-    $stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
-    $stmt->execute([$id]);
-    $client = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Si le client n'existe pas, rediriger
-    if (!$client) {
-        header("Location: listClients.php");
-        exit;
-    }
-}
-
-closeDatabaseConnection($conn);
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Modifier un Client</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../assets/style.css">
-    
+    <title>Modifier un client</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 70px; background-color: #f8f9fa; }
+        .container { max-width: 600px; }
+    </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="../index.php">Accueil</a>
-        <a href="../chambres/listChambres.php">Chambres</a>
-        <a href="listClients.php">Clients</a>
-        <a href="../reservations/listReservations.php">Réservations</a>
-    </div>
-    <div class="container">
-        <h1>Modifier un Client</h1>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
+  </div>
+</nav>
 
-        <?php if (isset($errors) && !empty($errors)): ?>
-            <div class="error-message">
-                <?php foreach ($errors as $error): ?>
-                    <p><?= htmlspecialchars($error) ?></p>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+<div class="container">
+    <h2 class="my-4">Modifier le client</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label class="form-label">Nom</label>
+            <input type="text" name="nom" class="form-control" value="<?= htmlspecialchars($client['nom']) ?>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($client['email']) ?>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Téléphone</label>
+            <input type="text" name="telephone" class="form-control" value="<?= htmlspecialchars($client['telephone']) ?>" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nombre de personnes</label>
+            <input type="number" name="nombre_personnes" class="form-control" value="<?= $client['nombre_personnes'] ?>" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="listClients.php" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
 
-        <form method="post">
-            <div class="form-group">
-                <label for="nom">Nom:</label>
-                <input type="text" id="nom" name="nom" value="<?= htmlspecialchars($client['nom']) ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="prenom">Prénom:</label>
-                <input type="text" id="prenom" name="prenom" value="<?= htmlspecialchars($client['prenom']) ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($client['email']) ?>" required>
-            </div>
-
-            <div class="actions">
-                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                <a href="listClients.php" class="btn btn-danger">Annuler</a>
-            </div>
-        </form>
-    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
