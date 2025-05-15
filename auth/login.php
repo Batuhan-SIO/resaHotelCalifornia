@@ -2,9 +2,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-require_once 'config/db_connect.php';
+require_once '../config/db_connect.php';
 
 $errors = [];
 
@@ -24,13 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         closeDatabaseConnection($conn);
 
         if ($user) {
-            // Si mot de passe en clair
+            // COMPARAISON SIMPLE SANS password_verify
             if ($password === $user['password']) {
                 $_SESSION['user_id'] = $user['employes_id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
 
-                header('Location: reservations/listReservations.php?message=Connexion réussie');
+                header('Location: ../reservations/listReservations.php?message=Connexion réussie');
                 exit;
             } else {
                 $errors[] = "Mot de passe incorrect.";

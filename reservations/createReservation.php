@@ -3,9 +3,9 @@ require_once '../config/db_connect.php';
 $conn = openDatabaseConnection();
 
 // Clients
-$clients = $conn->query("SELECT id, nom FROM clients")->fetchAll(PDO::FETCH_ASSOC);
+$clients = $conn->query("SELECT client_id, nom FROM clients")->fetchAll(PDO::FETCH_ASSOC);
 // Chambres
-$chambres = $conn->query("SELECT id, numero FROM chambres")->fetchAll(PDO::FETCH_ASSOC);
+$chambres = $conn->query("SELECT chambre_id, numero FROM chambres")->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $client_id = $_POST['client_id'];
