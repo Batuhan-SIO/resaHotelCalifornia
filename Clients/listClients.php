@@ -1,5 +1,21 @@
 <?php
+session_start(); // Démarre la session avant toute sortie HTML
+
 require_once '../config/db_connect.php';
+
+// Fonction pour vérifier le rôle de l'utilisateur
+function hasRole($role) {
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === $role;
+}
+
+// Vérifie si l'utilisateur a le rôle "directeur"
+if (!hasRole("directeur")) {
+    $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
+    header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
+    exit;
+}
+
+// Connexion à la base de données
 $conn = openDatabaseConnection();
 $stmt = $conn->query("SELECT * FROM clients ORDER BY nom");
 $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -69,15 +85,15 @@ closeDatabaseConnection($conn);
         <tbody>
         <?php foreach ($clients as $client): ?>
             <tr>
-                <td><?= $client['id'] ?></td>
+                <td><?= $client['client_id'] ?></td>
                 <td><?= $client['nom'] ?></td>
                 <td><?= $client['prenom'] ?></td>
                 <td><?= $client['email'] ?></td>
                 <td>
-                    <a href="editClient.php?id=<?= $client['id'] ?>" class="btn btn-warning btn-sm">
+                    <a href="editClient.php?id=<?= $client['client_id'] ?>" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <a href="deleteClient.php?id=<?= $client['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce client ?')">
+                    <a href="deleteClient.php?id=<?= $client['client_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce client ?')">
                         <i class="fas fa-trash-alt"></i>
                     </a>
                 </td>

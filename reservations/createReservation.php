@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <select name="client_id" class="form-select" required>
         <option value="">-- Choisir --</option>
         <?php foreach ($clients as $c): ?>
-        <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['nom']) ?></option>
+        <option value="<?= $c['client_id'] ?>"><?= htmlspecialchars($c['nom']) ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <select name="chambre_id" class="form-select" required>
         <option value="">-- Choisir --</option>
         <?php foreach ($chambres as $ch): ?>
-        <option value="<?= $ch['id'] ?>">Chambre <?= htmlspecialchars($ch['numero']) ?></option>
+        <option value="<?= $ch['chambre_id'] ?>">Chambre <?= htmlspecialchars($ch['numero']) ?></option>
         <?php endforeach; ?>
       </select>
     </div>

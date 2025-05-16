@@ -1,116 +1,145 @@
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-session_start();
-
-require_once 'config/db_connect.php';
-
-$errors = [];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-
-    if (empty($username) || empty($password)) {
-        $errors[] = "Tous les champs sont obligatoires.";
-    } else {
-        $conn = openDatabaseConnection();
-
-        $stmt = $conn->prepare("SELECT * FROM employes WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        closeDatabaseConnection($conn);
-
-        if ($user) {
-            // Si mot de passe en clair
-            if ($password === $user['password']) {
-                $_SESSION['user_id'] = $user['employes_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-
-                header('Location: reservations/listReservations.php?message=Connexion réussie');
-                exit;
-            } else {
-                $errors[] = "Mot de passe incorrect.";
-            }
-        } else {
-            $errors[] = "Utilisateur inconnu.";
-        }
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Connexion Employé</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Système de Gestion d'Hôtel</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
     <style>
+        /* Fond clair du corps */
         body {
-            background: url('fondhotel.png') no-repeat center center fixed;
-            background-size: cover;
+            background-color: #f8f9fa;
             min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
         }
-        .card-login {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.3);
-            color: white;
-            width: 400px;
+
+        /* Style pour la carte principale */
+        .dashboard-card {
+            transition: transform 0.3s ease;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            background-color: white;
         }
-        .btn-primary {
-            background-color: #00BFFF;
-            border: none;
-            transition: 0.3s;
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
         }
-        .btn-primary:hover {
-            background-color: #009ACD;
+
+        /* Style des liens de navigation dans la carte */
+        .nav-link {
+            color: white !important;
+            transition: opacity 0.3s ease;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
         }
-        label {
-            margin-bottom: 5px;
+
+        .nav-link:hover {
+            opacity: 0.9;
         }
-        .form-control {
-            border-radius: 10px;
+
+        .hotel-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0;
         }
     </style>
 </head>
+
 <body>
 
-<div class="card-login">
-    <h2 class="text-center mb-4">Connexion Employé 🔐</h2>
-
-    <?php if (!empty($errors)): ?>
-        <div class="alert alert-danger">
-            <?php foreach ($errors as $error): ?>
-                <p><?= htmlspecialchars($error) ?></p>
-            <?php endforeach; ?>
+    <!-- Navbar noire -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Hôtel California</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="chambres/listChambres.php"><i class="fas fa-bed me-1"></i> Chambres</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="clients/listClients.php"><i class="fas fa-users me-1"></i> Clients</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="reservations/listReservations.php"><i class="fas fa-calendar-check me-1"></i> Réservations</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="auth/login.php"><i class="fas fa-user-lock me-1"></i> Connexion</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    <?php endif; ?>
+    </nav>
 
-    <form method="post" class="row g-3">
-        <div class="col-12">
-            <label class="form-label">Nom d'utilisateur</label>
-            <input type="text" name="username" class="form-control" required autofocus>
+    <!-- Conteneur principal -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card dashboard-card shadow-lg">
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h1 class="mb-3">Système de Gestion d'Hôtel</h1>
+                        <div class="text-center">
+                            <i class="fas fa-hotel hotel-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <nav class="nav flex-column gap-3">
+                            <a href="chambres/listChambres.php"
+                                class="nav-link bg-primary fw-bold d-flex align-items-center gap-2">
+                                <span class="badge rounded-pill bg-white text-primary px-3 py-1">100+</span>
+                                <i class="fas fa-bed me-2"></i>
+                                Gestion des Chambres
+                            </a>
+
+                            <a href="clients/listClients.php"
+                                class="nav-link bg-secondary fw-bold d-flex align-items-center gap-2">
+                                <span class="badge rounded-pill bg-white text-secondary px-3 py-1">50+</span>
+                                <i class="fas fa-users me-2"></i>
+                                Gestion des Clients
+                            </a>
+
+                            <a href="reservations/listReservations.php"
+                                class="nav-link bg-success fw-bold d-flex align-items-center gap-2">
+                                <span class="badge rounded-pill bg-white text-success px-3 py-1">75</span>
+                                <i class="fas fa-calendar-check me-2"></i>
+                                Gestion des Réservations
+                            </a>
+
+                            <a href="auth/login.php"
+                                class="nav-link bg-dark fw-bold d-flex align-items-center gap-2">
+                                <i class="fas fa-user-lock me-2"></i>
+                                Connexion Employé
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="col-12">
-            <label class="form-label">Mot de passe</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-
-        <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary mt-3 px-4">Se connecter</button>
-        </div>
-    </form>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Bundle avec Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

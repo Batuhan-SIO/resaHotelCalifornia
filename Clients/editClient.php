@@ -2,67 +2,78 @@
 require_once '../config/db_connect.php';
 $conn = openDatabaseConnection();
 
-$id = $_GET['id'];
-$stmt = $conn->prepare("SELECT * FROM clients WHERE id = ?");
-$stmt->execute([$id]);
-$client = $stmt->fetch(PDO::FETCH_ASSOC);
+$client_id = isset($_GET['client_id']) ? (int)$_GET['client_id'] : 0;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = $_POST['nom'];
-    $email = $_POST['email'];
-    $tel = $_POST['telephone'];
-    $nb = $_POST['nombre_personnes'];
-
-    $stmt = $conn->prepare("UPDATE clients SET nom = ?, email = ?, telephone = ?, nombre_personnes = ? WHERE id = ?");
-    $stmt->execute([$nom, $email, $tel, $nb, $id]);
-    closeDatabaseConnection($conn);
+// Redirection si l'ID est invalide
+if ($client_id <= 0) {
     header("Location: listClients.php");
     exit;
 }
+
+// Récupération des données du client
+$stmt = $conn->prepare("SELECT * FROM clients WHERE client_id = ?");
+$stmt->execute([$client_id]);
+$client = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$client) {
+    header("Location: listClients.php");
+    exit;
+}
+
+// Mise à jour après soumission du formulaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nom = $_POST['nom'] ?? '';
+    $prenom = $_POST['prenom'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $telephone = $_POST['telephone'] ?? '';
+    $nombre_personnes = (int)($_POST['nombre_personnes'] ?? 1);
+
+    // Préparation et exécution de la mise à jour
+    $stmt = $conn->prepare("UPDATE clients SET nom = ?, prenom = ?, email = ?, telephone = ?, nombre_personnes = ? WHERE client_id = ?");
+    $stmt->execute([$nom, $prenom, $email, $telephone, $nombre_personnes, $client_id]);
+
+    // Redirection après modification
+    header("Location: listClients.php?success=1");
+    exit;
+}
+
+closeDatabaseConnection($conn);
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Modifier un client</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { padding-top: 70px; background-color: #f8f9fa; }
-        .container { max-width: 600px; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
-  </div>
-</nav>
-
-<div class="container">
-    <h2 class="my-4">Modifier le client</h2>
+<div class="container mt-5">
+    <h1>Modifier un client</h1>
     <form method="post">
         <div class="mb-3">
-            <label class="form-label">Nom</label>
-            <input type="text" name="nom" class="form-control" value="<?= htmlspecialchars($client['nom']) ?>" required>
+            <label for="nom" class="form-label">Nom</label>
+            <input type="text" name="nom" id="nom" class="form-control" required value="<?= htmlspecialchars($client['nom']) ?>">
         </div>
         <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($client['email']) ?>" required>
+            <label for="prenom" class="form-label">Prénom</label>
+            <input type="text" name="prenom" id="prenom" class="form-control" required value="<?= htmlspecialchars($client['prenom']) ?>">
         </div>
         <div class="mb-3">
-            <label class="form-label">Téléphone</label>
-            <input type="text" name="telephone" class="form-control" value="<?= htmlspecialchars($client['telephone']) ?>" required>
+            <label for="email" class="form-label">E-mail</label>
+            <input type="email" name="email" id="email" class="form-control" required value="<?= htmlspecialchars($client['email']) ?>">
         </div>
         <div class="mb-3">
-            <label class="form-label">Nombre de personnes</label>
-            <input type="number" name="nombre_personnes" class="form-control" value="<?= $client['nombre_personnes'] ?>" required>
+            <label for="telephone" class="form-label">Téléphone</label>
+            <input type="text" name="telephone" id="telephone" class="form-control" value="<?= htmlspecialchars($client['telephone']) ?>">
+        </div>
+        <div class="mb-3">
+            <label for="nombre_personnes" class="form-label">Nombre de personnes</label>
+            <input type="number" name="nombre_personnes" id="nombre_personnes" class="form-control" required value="<?= htmlspecialchars($client['nombre_personnes']) ?>">
         </div>
         <button type="submit" class="btn btn-primary">Enregistrer</button>
         <a href="listClients.php" class="btn btn-secondary">Annuler</a>
     </form>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

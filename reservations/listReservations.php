@@ -3,7 +3,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Fonction simple pour vérifier le rôle
+function hasRole($role) {
+    return isset($_SESSION['role']) && $_SESSION['role'] === $role;
+}
+
 require_once '../config/db_connect.php';
+
+if (!hasRole("directeur")) {
+    $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
+    header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
+    exit;
+}
+
 $conn = openDatabaseConnection();
 
 $query = "SELECT r.id, r.date_arrivee, r.date_depart,
@@ -24,60 +36,83 @@ try {
 
 closeDatabaseConnection($conn);
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Liste des Réservations</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Bootstrap + FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: url('../fondReservation.png') no-repeat center center fixed;
+            padding-top: 70px;
+            background-image: url('https://media.istockphoto.com/id/104731717/fr/photo/centre-de-vill%C3%A9giature-de-luxe.jpg?s=612x612&w=0&k=20&c=qn-Ugr3N5J_JBKZttni3vimlfBOd52jWG3FouENXye0=');
             background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             min-height: 100vh;
-            color: white;
         }
-        .container {
-            margin-top: 80px;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 40px;
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            max-width: 900px;
+            margin: auto;
+            margin-top: 30px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
         }
-        th, td {
-            vertical-align: middle !important;
+        .table th, .table td {
+            vertical-align: middle;
         }
     </style>
 </head>
 <body>
 
-<?php include_once '../asset/navbar.php'; ?>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="../chambres/listChambres.php">Chambres</a></li>
+        <li class="nav-item"><a class="nav-link" href="../clients/listClients.php">Clients</a></li>
+        <li class="nav-item"><a class="nav-link active" href="listReservations.php">Réservations</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-<div class="container">
-    <h1 class="text-center mb-4">Liste des Réservations</h1>
+<div class="content-wrapper">
+    <?php
+    // Gestion des messages
+    if (isset($_GET['message'])) {
+        $message = htmlspecialchars(urldecode($_GET['message']));
+        $alertClass = strpos($message, 'ERREUR') !== false ? 'alert-warning' : 'alert-success';
+        echo "<div class='alert $alertClass alert-dismissible fade show' role='alert'>
+                $message
+                <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+              </div>";
+    }
+    ?>
 
-    <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
-        <div class="alert alert-success text-center">✅ Réservation enregistrée avec succès.</div>
-    <?php endif; ?>
+    <h2 class="my-4 text-center">Liste des réservations</h2>
 
-    <div class="text-end mb-3">
+    <div class="text-center mb-3">
         <a href="createReservation.php" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> Ajouter une réservation
+            <i class="fas fa-plus"></i> Ajouter une réservation
         </a>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered table-striped text-center align-middle">
+        <table class="table table-striped text-center">
             <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Client</th>
                     <th>Chambre</th>
-                    <th>Nombre de personnes</th>
-                    <th>Date d'arrivée</th>
-                    <th>Date de départ</th>
+                    <th>Personnes</th>
+                    <th>Arrivée</th>
+                    <th>Départ</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -91,12 +126,12 @@ closeDatabaseConnection($conn);
                         <td><?= htmlspecialchars($reservation['date_arrivee']) ?></td>
                         <td><?= htmlspecialchars($reservation['date_depart']) ?></td>
                         <td>
-                            <a href="editReservation.php?id=<?= htmlspecialchars($reservation['id']) ?>" class="btn btn-primary btn-sm">
-                                <i class="bi bi-pencil-square"></i>
+                            <a href="editReservation.php?id=<?= htmlspecialchars($reservation['id']) ?>" class="btn btn-warning btn-sm" title="Modifier">
+                                <i class="fas fa-edit"></i>
                             </a>
-                            <a href="deleteReservation.php?id=<?= htmlspecialchars($reservation['id']) ?>" class="btn btn-danger btn-sm"
+                            <a href="deleteReservation.php?id=<?= htmlspecialchars($reservation['id']) ?>" class="btn btn-danger btn-sm" title="Supprimer"
                                onclick="return confirm('Supprimer cette réservation ?');">
-                                <i class="bi bi-trash3"></i>
+                                <i class="fas fa-trash-alt"></i>
                             </a>
                         </td>
                     </tr>
@@ -104,9 +139,8 @@ closeDatabaseConnection($conn);
             </tbody>
         </table>
     </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

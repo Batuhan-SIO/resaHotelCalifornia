@@ -2,7 +2,7 @@
 // Inclusion du fichier de connexion à la base de données
 require_once '../config/db_connect.php';
 
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = isset($_GET['client_id']) ? (int)$_GET['id'] : 0;
 
 // Vérifier si l'ID est valide
 if ($id <= 0) {

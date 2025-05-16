@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         closeDatabaseConnection($conn);
 
         if ($user) {
-            // COMPARAISON SIMPLE SANS password_verify
             if ($password === $user['password']) {
                 $_SESSION['user_id'] = $user['employes_id'];
                 $_SESSION['username'] = $user['username'];
@@ -43,50 +42,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Connexion Employé</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap + FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: url('fondhotel.png') no-repeat center center fixed;
+            padding-top: 70px;
+            background-image: url('https://media.istockphoto.com/id/104731717/fr/photo/centre-de-vill%C3%A9giature-de-luxe.jpg?s=612x612&w=0&k=20&c=qn-Ugr3N5J_JBKZttni3vimlfBOd52jWG3FouENXye0=');
             background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-        .card-login {
-            background: rgba(0, 0, 0, 0.7);
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.3);
-            color: white;
-            width: 400px;
+            border-radius: 15px;
+            max-width: 500px;
+            margin: auto;
+            margin-top: 50px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .form-control {
+            border-radius: 10px;
         }
         .btn-primary {
             background-color: #00BFFF;
             border: none;
-            transition: 0.3s;
         }
         .btn-primary:hover {
             background-color: #009ACD;
-        }
-        label {
-            margin-bottom: 5px;
-        }
-        .form-control {
-            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
-<div class="card-login">
-    <h2 class="text-center mb-4">Connexion Employé 🔐</h2>
+<!-- Navbar uniforme -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="../chambres/listChambres.php">Chambres</a></li>
+        <li class="nav-item"><a class="nav-link" href="../clients/listClients.php">Clients</a></li>
+        <li class="nav-item"><a class="nav-link" href="../reservations/listReservations.php">Réservations</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="content-wrapper">
+    <h2 class="text-center mb-4"><i class="fas fa-user-lock"></i> Connexion Employé</h2>
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
@@ -108,11 +119,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary mt-3 px-4">Se connecter</button>
+            <button type="submit" class="btn btn-primary mt-3 px-4">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
         </div>
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
