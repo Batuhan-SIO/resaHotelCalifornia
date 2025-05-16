@@ -10,7 +10,7 @@ require_once '../auth/authFunctions.php';
 
 // Vérification du rôle (admin requis ici — à adapter si besoin)
 if (!hasRole("directeur")) {
-    $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
+    $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.".hasRole("directeur"));
     header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
     exit;
 }

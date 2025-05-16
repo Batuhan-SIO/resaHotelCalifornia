@@ -2,15 +2,11 @@
 session_start(); // Démarre la session avant toute sortie HTML
 
 require_once '../config/db_connect.php';
-
-// Fonction pour vérifier le rôle de l'utilisateur
-function hasRole($role) {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === $role;
-}
+require_once '../auth/authFunctions.php';
 
 // Vérifie si l'utilisateur a le rôle "directeur"
-if (!hasRole("admin")) {
-    $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
+if (!hasRole("directeur")) {
+    $encodedMessage = urlencode("ERREUR 😊 : Vous n'avez pas les bonnes permissions.".hasRole("directeur"));
     header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
     exit;
 }
