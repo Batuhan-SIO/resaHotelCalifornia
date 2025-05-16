@@ -9,7 +9,7 @@ function hasRole($role) {
 }
 
 // Vérifie si l'utilisateur a le rôle "directeur"
-if (!hasRole("directeur")) {
+if (!hasRole("admin")) {
     $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
     header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
     exit;

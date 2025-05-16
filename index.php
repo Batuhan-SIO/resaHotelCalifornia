@@ -7,15 +7,15 @@
     <title>Système de Gestion d'Hôtel</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
 
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- Font Awesome (version 6.4 stable) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
 
     <style>
         /* Fond noir pour toute la page */
         body {
-            background-color: #000000;
+            background-color: #000;
             min-height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,7 +28,7 @@
             transition: transform 0.3s ease;
             border-radius: 15px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            background-color: white;
+            background-color: #fff;
         }
 
         .dashboard-card:hover {
@@ -37,7 +37,7 @@
 
         /* Style liens dans la carte */
         .nav-link {
-            color: white !important;
+            color: #fff !important;
             transition: opacity 0.3s ease;
             border-radius: 12px;
             padding: 15px;
@@ -46,6 +46,7 @@
 
         .nav-link:hover {
             opacity: 0.9;
+            text-decoration: none;
         }
 
         .hotel-icon {
@@ -140,7 +141,7 @@
     </div>
 
     <!-- Bootstrap Bundle avec Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 
 </html>

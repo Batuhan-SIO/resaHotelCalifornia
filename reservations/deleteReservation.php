@@ -1,13 +1,18 @@
 <?php
 // Suppression d'une chambre avec gestion des réservations associées
 
-// Chemin à adapter selon ton arborescence
 require_once __DIR__ . '/../config/db_connect.php';
 
-$chambre_id = isset($_GET['chambre_id']) ? (int)$_GET['chambre_id'] : 0;
+// Récupération de l'id chambre prioritairement en POST, sinon GET
+$chambre_id = 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['chambre_id'])) {
+    $chambre_id = (int) $_POST['chambre_id'];
+} elseif (isset($_GET['chambre_id'])) {
+    $chambre_id = (int) $_GET['chambre_id'];
+}
 
 if ($chambre_id <= 0) {
-    header("Location: listChambres.php");
+    header("Location: listReservations.php");
     exit;
 }
 
@@ -20,12 +25,11 @@ try {
     $chambre = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$chambre) {
-        header("Location: listChambres.php");
+        header("Location: listReservations.php");
         exit;
     }
 
     // Vérifier si la chambre a des réservations
-    // Ici on suppose que la table reservations a bien un champ chambre_id
     $stmt = $conn->prepare("SELECT COUNT(*) FROM reservations WHERE chambre_id = ?");
     $stmt->execute([$chambre_id]);
     $count = (int)$stmt->fetchColumn();
@@ -39,12 +43,12 @@ try {
         try {
             if ($hasReservations && isset($_POST['delete_reservations']) && $_POST['delete_reservations'] === 'yes') {
                 // Supprimer les réservations liées
-                // Note : ici on supprime par chambre_id, donc pas besoin de changer reservation_id en id
                 $stmt = $conn->prepare("DELETE FROM reservations WHERE chambre_id = ?");
                 $stmt->execute([$chambre_id]);
             } elseif ($hasReservations) {
                 // Si réservations existantes et suppression non confirmée
-                header("Location: listChambres.php?error=1");
+                $conn->rollBack();
+                header("Location: listReservations.php?error=1");
                 exit;
             }
 
@@ -54,7 +58,7 @@ try {
 
             $conn->commit();
 
-            header("Location: listChambres.php?deleted=1");
+            header("Location: listReservations.php?deleted=1");
             exit;
 
         } catch (Exception $e) {
@@ -114,6 +118,8 @@ try {
     <?php endif; ?>
 
     <form method="post">
+        <input type="hidden" name="chambre_id" value="<?= htmlspecialchars($chambre_id) ?>" />
+
         <?php if ($hasReservations): ?>
             <div class="form-check">
                 <input type="checkbox" id="delete_reservations" name="delete_reservations" value="yes" class="form-check-input" />
@@ -128,7 +134,7 @@ try {
         <div class="actions">
             <input type="hidden" name="confirm" value="yes" />
             <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
-            <a href="listChambres.php" class="btn btn-secondary">Annuler</a>
+            <a href="listReservations.php" class="btn btn-secondary">Annuler</a>
         </div>
     </form>
 </div>

@@ -27,12 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user) {
             if ($password === $user['password']) {
-                $_SESSION['user_id'] = $user['employes_id'];
+                $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 // Remplacer "directeur" par "admin"
-                $_SESSION['role'] = ($user['role'] === 'directeur') ? 'admin' : $user['role'];
+                // $_SESSION['role'] = ($user['role'] === 'directeur') ? 'admin' : $user['role'];
+                $_SESSION['role'] = $user['role'];
 
-                header('Location: ../reservations/listReservations.php?message=Connexion réussie');
+                header('Location: ../index.php?message=Connexion réussie_'.$_SESSION['role']);
                 exit;
             } else {
                 $errors[] = "Mot de passe incorrect.";

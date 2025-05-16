@@ -1,12 +1,14 @@
 <?php
-// Démarrage de session
-session_start();
+// Démarrer la session si nécessaire
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Inclusion des fonctions d'authentification et connexion DB
+// Inclusion des fonctions d'authentification et de connexion DB
 require_once '../config/db_connect.php';
 require_once '../auth/authFunctions.php';
 
-// Vérification du rôle "directeur"
+// Vérification du rôle (admin requis ici — à adapter si besoin)
 if (!hasRole("directeur")) {
     $encodedMessage = urlencode("ERREUR : Vous n'avez pas les bonnes permissions.");
     header("Location: /resaHotelCalifornia/auth/login.php?message=$encodedMessage");
@@ -19,7 +21,7 @@ if (!$conn) {
     die("Erreur de connexion à la base de données.");
 }
 
-// Récupération des chambres ordonnées par numéro
+// Récupération des chambres
 $stmt = $conn->query("SELECT * FROM chambres ORDER BY numero");
 $chambres = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -85,9 +87,7 @@ closeDatabaseConnection($conn);
 
 <div class="content-wrapper">
 
-    <?php
-    // Affichage des messages (succès ou erreur)
-    if (isset($_GET['message'])):
+    <?php if (isset($_GET['message'])):
         $message = htmlspecialchars(urldecode($_GET['message']));
         $alertClass = (stripos($message, 'ERREUR') !== false) ? 'alert-warning' : 'alert-success';
     ?>
@@ -143,6 +143,5 @@ closeDatabaseConnection($conn);
 
 <!-- JS Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
