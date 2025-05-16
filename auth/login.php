@@ -29,7 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($password === $user['password']) {
                 $_SESSION['user_id'] = $user['employes_id'];
                 $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
+                // Remplacer "directeur" par "admin"
+                $_SESSION['role'] = ($user['role'] === 'directeur') ? 'admin' : $user['role'];
 
                 header('Location: ../reservations/listReservations.php?message=Connexion réussie');
                 exit;

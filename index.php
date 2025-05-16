@@ -13,9 +13,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
 
     <style>
-        /* Fond clair du corps */
+        /* Fond noir pour toute la page */
         body {
-            background-color: #f8f9fa;
+            background-color: #000000;
             min-height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,11 +23,11 @@
             flex-direction: column;
         }
 
-        /* Style pour la carte principale */
+        /* Carte blanche centrée */
         .dashboard-card {
             transition: transform 0.3s ease;
             border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             background-color: white;
         }
 
@@ -35,7 +35,7 @@
             transform: translateY(-5px);
         }
 
-        /* Style des liens de navigation dans la carte */
+        /* Style liens dans la carte */
         .nav-link {
             color: white !important;
             transition: opacity 0.3s ease;
@@ -52,6 +52,7 @@
             width: 80px;
             height: 80px;
             margin-bottom: 1rem;
+            color: #fff;
         }
 
         .card-header {
