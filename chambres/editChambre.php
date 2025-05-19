@@ -1,136 +1,85 @@
 <?php
 require_once '../config/db_connect.php';
+$conn = openDatabaseConnection();
 
+// Récupération de l'ID depuis l'URL
 $chambre_id = isset($_GET['chambre_id']) ? (int)$_GET['chambre_id'] : 0;
 
+// Vérifie que l'ID est valide
 if ($chambre_id <= 0) {
-    header("Location: listChambres.php");
+    header("Location: listChambres.php?error=invalid_id");
     exit;
 }
 
-try {
-    $conn = openDatabaseConnection();
+// Récupération des données de la chambre
+$stmt = $conn->prepare("SELECT * FROM chambres WHERE chambre_id = ?");
+$stmt->execute([$chambre_id]);
+$chambre = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Vérifier si la chambre existe
-    $stmt = $conn->prepare("SELECT * FROM chambres WHERE chambre_id = ?");
-    $stmt->execute([$chambre_id]);
-    $chambre = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$chambre) {
+    header("Location: listChambres.php?error=not_found");
+    exit;
+}
 
-    if (!$chambre) {
-        closeDatabaseConnection($conn);
-        header("Location: listChambres.php");
-        exit;
-    }
+// Si le formulaire est soumis
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $numero = $_POST['numero'];
+    $capacite = $_POST['capacite'];
+    $disponible = isset($_POST['disponible']) ? 1 : 0;
 
-    // Vérifier les réservations liées
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM reservations WHERE chambre_id = ?");
-    $stmt->execute([$chambre_id]);
-    $count = $stmt->fetchColumn();
-
-    $hasReservations = ($count > 0);
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm']) && $_POST['confirm'] === 'yes') {
-        $conn->beginTransaction();
-
-        try {
-            if ($hasReservations && (!isset($_POST['delete_reservations']) || $_POST['delete_reservations'] !== 'yes')) {
-                // Si réservations existent et suppression refusée => erreur
-                $conn->rollBack();
-                closeDatabaseConnection($conn);
-                header("Location: listChambres.php?error=1");
-                exit;
-            }
-
-            // Supprimer les réservations si demandé
-            if ($hasReservations && isset($_POST['delete_reservations']) && $_POST['delete_reservations'] === 'yes') {
-                $stmt = $conn->prepare("DELETE FROM reservations WHERE chambre_id = ?");
-                $stmt->execute([$chambre_id]);
-            }
-
-            // Supprimer la chambre
-            $stmt = $conn->prepare("DELETE FROM chambres WHERE chambre_id = ?");
-            $stmt->execute([$chambre_id]);
-
-            $conn->commit();
-            closeDatabaseConnection($conn);
-
-            header("Location: listChambres.php?deleted=1");
-            exit;
-
-        } catch (Exception $e) {
-            $conn->rollBack();
-            closeDatabaseConnection($conn);
-            die("Erreur lors de la suppression : " . $e->getMessage());
-        }
-    }
+    // Mise à jour des données
+    $updateStmt = $conn->prepare("UPDATE chambres SET numero = ?, capacite = ?, disponible = ? WHERE chambre_id = ?");
+    $updateStmt->execute([$numero, $capacite, $disponible, $chambre_id]);
 
     closeDatabaseConnection($conn);
-
-} catch (Exception $e) {
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
+    header("Location: listChambres.php?message=modification_reussie");
+    exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>Supprimer une Chambre</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../assets/style.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" crossorigin="anonymous" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <title>Modifier une chambre</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
-        .warning-box {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid #ffeeba;
+        body {
+            padding-top: 70px;
+            background-color: #f8f9fa;
         }
-        .danger-box {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 5px solid #f5c6cb;
-        }
-        .form-check {
-            margin: 10px 0;
+        .container {
+            max-width: 600px;
         }
     </style>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
+  </div>
+</nav>
+
 <div class="container">
-    <h1>Supprimer une Chambre</h1>
-
-    <div class="warning-box">
-        <p><strong>Attention :</strong> Vous êtes sur le point de supprimer la chambre numéro <?= htmlspecialchars($chambre['numero']) ?>.</p>
-    </div>
-
-    <?php if ($hasReservations): ?>
-        <div class="danger-box">
-            <p><strong>Cette chambre est associée à <?= $count ?> réservation(s).</strong></p>
-            <p>La suppression de cette chambre affectera les réservations existantes.</p>
-        </div>
-    <?php endif; ?>
-
+    <h2 class="my-4">Modifier la chambre</h2>
     <form method="post">
-        <?php if ($hasReservations): ?>
-            <div class="form-check">
-                <input type="checkbox" id="delete_reservations" name="delete_reservations" value="yes" />
-                <label for="delete_reservations">Supprimer également les <?= $count ?> réservation(s) associée(s) à cette chambre</label>
-            </div>
-        <?php endif; ?>
-
-        <p>Êtes-vous sûr de vouloir supprimer cette chambre ?</p>
-
-        <div class="actions">
-            <input type="hidden" name="confirm" value="yes" />
-            <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
-            <a href="listChambres.php" class="btn btn-secondary">Annuler</a>
+        <div class="mb-3">
+            <label class="form-label">Numéro</label>
+            <input type="text" name="numero" class="form-control" value="<?= htmlspecialchars($chambre['numero']) ?>" required>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Capacité</label>
+            <input type="number" name="capacite" class="form-control" value="<?= htmlspecialchars($chambre['capacite']) ?>" required>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="disponible" id="disponible" <?= $chambre['disponible'] ? 'checked' : '' ?>>
+            <label class="form-check-label" for="disponible">Disponible</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="listChambres.php" class="btn btn-secondary">Annuler</a>
     </form>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

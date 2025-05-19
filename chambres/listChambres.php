@@ -60,30 +60,7 @@ closeDatabaseConnection($conn);
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="../index.php"><i class="fas fa-hotel"></i> Hôtel California</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" 
-      aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarMenu">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link active" href="listChambres.php">Chambres</a></li>
-        <li class="nav-item"><a class="nav-link" href="../clients/listClients.php">Clients</a></li>
-        <li class="nav-item"><a class="nav-link" href="../reservations/listReservations.php">Réservations</a></li>
-      </ul>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item text-white nav-link">
-            Connecté en tant que <strong><?= htmlspecialchars($_SESSION['username'] ?? 'Invité') ?></strong>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="../auth/logout.php">Déconnexion</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+<?php include '../assets/navbar.php'; ?>
 
 <div class="content-wrapper">
 
@@ -125,10 +102,10 @@ closeDatabaseConnection($conn);
                             <td><?= htmlspecialchars($chambre['numero']) ?></td>
                             <td><?= htmlspecialchars($chambre['capacite']) ?></td>
                             <td>
-                                <a href="editChambre.php?id=<?= urlencode($chambre['chambre_id']) ?>" class="btn btn-warning btn-sm" title="Modifier">
+                                <a href="editChambre.php?chambre_id=<?= urlencode($chambre['chambre_id']) ?>" class="btn btn-warning btn-sm" title="Modifier">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="deleteChambre.php?id=<?= urlencode($chambre['chambre_id']) ?>" class="btn btn-danger btn-sm" 
+                                <a href="deleteChambre.php?chambre_id=<?= urlencode($chambre['chambre_id']) ?>" class="btn btn-danger btn-sm" 
                                    onclick="return confirm('Supprimer cette chambre ?')" title="Supprimer">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>

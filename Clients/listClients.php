@@ -86,7 +86,7 @@ closeDatabaseConnection($conn);
                 <td><?= $client['prenom'] ?></td>
                 <td><?= $client['email'] ?></td>
                 <td>
-                    <a href="editClient.php?id=<?= $client['client_id'] ?>" class="btn btn-warning btn-sm">
+                    <a href="editClient.php?client_id=<?= $client['client_id'] ?>" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i>
                     </a>
                     <a href="deleteClient.php?id=<?= $client['client_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce client ?')">
